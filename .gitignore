@@ -1,2 +1,6 @@
 .idea
 .vscode
+.mvn
+target
+**/*.iml
+pom.xml
