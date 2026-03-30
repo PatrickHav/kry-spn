@@ -22,11 +22,16 @@ public class SPN {
                     0b1101_0110_0011_1111};
 
 
-    public static final String cipherText =
+    public static final String cypherText =
             "000001001101001000001011101110000000001010001111" +
                     "100011100111111101100000010100010100001110100000" +
                     "000010011011001110010101110110000";
 
+
+    // variables used for testing
+    public static final int x = 0b0001_0010_1000_1111;
+    public static final int k = 0b0001_0001_0010_1000_1000_1100_0000_0000;
+    public static final int y = 0b1010_1110_1011_0100;
 }
 
 
