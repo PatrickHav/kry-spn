@@ -92,7 +92,6 @@ public class SPN {
         String asciiPadded = String.join("", xs);
         // Remove padding
         int lastIndexOf1 = asciiPadded.lastIndexOf("1");
-        System.out.println("lastIndexOf1: " + lastIndexOf1);
         String ascii = String.join("", asciiPadded.substring(0, lastIndexOf1));
 
         // Convert ascii

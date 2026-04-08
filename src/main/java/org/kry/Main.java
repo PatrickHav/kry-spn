@@ -1,8 +1,6 @@
 package org.kry;
 
 
-import java.util.Arrays;
-
 public class Main {
 
     public static final String cypherText =
