@@ -2,7 +2,11 @@ package org.kry;
 
 import java.util.*;
 
+/**
+ * Implements a SPN and uses it in CTR mode.
+ */
 public class SPN {
+
     private final int r;
     private final int n;
     private final int m;
@@ -17,6 +21,17 @@ public class SPN {
 
     private final int[] roundKeys;
 
+    /**
+     * Creates a new SPN.
+     *
+     * @param r              number of rounds
+     * @param n              size of one S-box input in bits
+     * @param m              number of S-boxes per block
+     * @param s              key length in bits
+     * @param sBox           S-box mapping
+     * @param bitPermutation bit permutation mapping
+     * @param key            encryption key
+     */
     public SPN(int r, int n, int m, int s, int[] sBox, int[] bitPermutation, int key) {
         this.r = r;
         this.n = n;
@@ -29,21 +44,23 @@ public class SPN {
         this.roundKeys = createRoundKeys(key, r, s);
     }
 
+    /**
+     * Encrypts a given text.
+     *
+     * @param text plaintext to encrypt
+     * @return ciphertext as a bit string
+     */
     public String encrypt(String text) {
         String ascii = textToAscii(text);
         String paddedAscii = padAscii(ascii);
 
-
-        // Create random bitstring
         String initialY = createRandomBitString();
 
         List<String> ys = new ArrayList<>();
         ys.add(initialY);
 
-        // Split
         List<String> parts = splitToParts(paddedAscii, l);
 
-        // Encrypt blocks
         for (int i = 0; i < parts.size(); i++) {
             String inc = incrementModulo2PowL(initialY, i);
             String spnEncrypted = spnEncryptBlock(inc);
@@ -53,6 +70,12 @@ public class SPN {
         return String.join("", ys);
     }
 
+    /**
+     * Decrypts the given ciphertext using CTR mode.
+     *
+     * @param chiffre ciphertext as a bit string
+     * @return decrypted plaintext
+     */
     public String decrypt(String chiffre) {
         List<String> xs = new ArrayList<>();
         String initialY = chiffre.substring(0, l);
@@ -76,6 +99,14 @@ public class SPN {
         return asciiToText(ascii);
     }
 
+    /**
+     * Creates all round keys from the original key.
+     *
+     * @param key original key
+     * @param r   number of rounds
+     * @param s   key length
+     * @return array of round keys
+     */
     private int[] createRoundKeys(int key, int r, int s) {
         int[] keys = new int[r + 1];
         String bin = toFixedLengthBitString(key, s);
@@ -85,6 +116,11 @@ public class SPN {
         return keys;
     }
 
+    /**
+     * Creates a random bit string
+     *
+     * @return random bit string
+     */
     private String createRandomBitString() {
         Random rand = new Random();
         StringBuilder sb = new StringBuilder(l);
@@ -94,6 +130,12 @@ public class SPN {
         return sb.toString();
     }
 
+    /**
+     * Converts a text to ASCII.
+     *
+     * @param text input text
+     * @return ASCII bit string
+     */
     private String textToAscii(String text) {
         StringBuilder bits = new StringBuilder();
 
@@ -106,6 +148,12 @@ public class SPN {
         return bits.toString();
     }
 
+    /**
+     * Converts an ASCII bit string to plaintext.
+     *
+     * @param bits ASCII bit string
+     * @return decoded text
+     */
     private String asciiToText(String bits) {
         StringBuilder text = new StringBuilder();
 
@@ -118,6 +166,12 @@ public class SPN {
         return text.toString();
     }
 
+    /**
+     * Pads the ASCII bit string.
+     *
+     * @param ascii unpadded ASCII bit string
+     * @return padded bit string
+     */
     private String padAscii(String ascii) {
         StringBuilder sb = new StringBuilder(ascii + "1");
         while (sb.length() % l != 0) {
@@ -126,11 +180,24 @@ public class SPN {
         return sb.toString();
     }
 
+    /**
+     * Computes (bits + i) mod 2^l.
+     *
+     * @param bits input bit string
+     * @param i    increment value
+     * @return incremented bit string
+     */
     private String incrementModulo2PowL(String bits, int i) {
         int val = (Integer.parseInt(bits, 2) + i) % Math.powExact(2, l);
         return toFixedLengthBitString(val, l);
     }
 
+    /**
+     * Encrypts one block with the SPN.
+     *
+     * @param block plaintext block
+     * @return encrypted block
+     */
     public String spnEncryptBlock(String block) {
         // Initial step
         String x = xorString(block, toFixedLengthBitString(roundKeys[0], l));
@@ -151,6 +218,12 @@ public class SPN {
         return x;
     }
 
+    /**
+     * Applies the bit permutation to a bit string.
+     *
+     * @param s input bit string
+     * @return permutated bit string
+     */
     private String permutate(String s) {
         List<String> bits = splitToParts(s, 1);
 
@@ -161,11 +234,26 @@ public class SPN {
         return String.join("", permutated);
     }
 
+    /**
+     * Computes the bitwise XOR of two bit strings.
+     *
+     * @param a first bit string
+     * @param b second bit string
+     * @return XOR result
+     */
     private String xorString(String a, String b) {
         int x = Integer.parseInt(a, 2) ^ Integer.parseInt(b, 2);
         return toFixedLengthBitString(x, l);
     }
 
+    /**
+     * Converts an integer to a binary string of fixed length.
+     * Zeros are prepended if necessary.
+     *
+     * @param value  value to convert
+     * @param length target length
+     * @return bit string with target length
+     */
     private String toFixedLengthBitString(int value, int length) {
         String bin = Integer.toBinaryString(value);
         if (bin.length() > length) {
@@ -174,6 +262,13 @@ public class SPN {
         return String.format("%" + length + "s", bin).replace(' ', '0');
     }
 
+    /**
+     * Splits a string into parts of equal size.
+     *
+     * @param a      input string
+     * @param length length of each part
+     * @return list of parts
+     */
     private List<String> splitToParts(String a, int length) {
         List<String> parts = new ArrayList<>();
         for (int i = 0; i < a.length(); i += length) {
@@ -183,11 +278,16 @@ public class SPN {
         return parts;
     }
 
+    /**
+     * Applies the S-box to the input.
+     *
+     * @param x    input bit string
+     * @param sBox S-box mapping
+     * @return substituted parts
+     */
     private List<String> sbox(String x, int[] sBox) {
         List<String> parts = splitToParts(x, n);
         parts.replaceAll(string -> toFixedLengthBitString(sBox[Integer.parseInt(string, 2)], n));
         return parts;
     }
 }
-
-
